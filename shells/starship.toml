@@ -1,0 +1,50 @@
+prompt_order = [
+	"time",
+ 	"username",
+	"hostname",
+ 	"directory",
+	"nix_shell",
+	"git_branch",
+	"rust",
+ 	"character"
+]
+
+add_newline = false
+
+[time]
+disabled = false
+style = "white"
+
+[username]
+show_always = true
+style_user = "yellow"
+style_root = "underline red"
+
+[hostname]
+ssh_only = false
+style = "blue"
+
+[directory]
+style = "green"
+fish_style_pwd_dir_length = 1
+
+[nix_shell]
+symbol = "❄️  "
+impure_msg = "impure"
+pure_msg = "pure"
+style = "cyan"
+
+[git_branch]
+symbol = "🌱 "
+truncation_length = 6
+truncation_symbol = "..."
+
+[rust]
+symbol = "⚙️  "
+
+[character]
+symbol = "$"
+error_symbol = "✗"
+use_symbol_for_status = true
+style_success = "black"
+style_error = "red"

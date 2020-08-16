@@ -1,0 +1,6 @@
+[user]
+	email = daven.desai@outlook.com
+	name = Daven Desai
+
+[core]
+    excludesfile = ~/.gitignore
