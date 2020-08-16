@@ -1,0 +1,262 @@
+#+TITLE: davendesai's Emacs Configuration
+#+DESCRIPTION: An org-babel based literate emacs configuration.
+#+LANGUAGE: en
+* Startup
+** Bootstrap =straight.el=
+   Configuration is dependent on [[https://github.com/raxod502/straight.el][straight.el]] for management.
+   #+BEGIN_QUOTE
+   straight.el is a next-generation, purely functional package manager for the Emacs hacker.
+   #+END_QUOTE
+   #+BEGIN_SRC emacs-lisp
+;; Bootstrap straight.el
+(defvar bootstrap-version)
+  (let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+   (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+     (url-retrieve-synchronously
+    "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+    'silent 'inhibit-cookies)
+     (goto-char (point-max))
+     (eval-print-last-sexp)))
+   (load bootstrap-file nil 'nomessage))
+   #+END_SRC
+*** Enable =use-package=
+    Utilize [[https://github.com/jwiegley/use-package][use-package]] macro for syntactic convenience.
+    #+BEGIN_QUOTE
+    The use-package macro allows you to isolate package configuration in your .emacs file in a way that is both performance-oriented and, well, tidy.
+    #+END_QUOTE
+    #+BEGIN_SRC emacs-lisp
+;; Install use-package via straight.el
+(straight-use-package 'use-package)
+    #+END_SRC
+** Enable =gcmh-mode=
+   #_BEGIN_QUOTE
+   Enforce a sneaky Garbage Collection strategy to minimize GC interference with the activity.
+   #+END_QUOTE
+   #+BEGIN_SRC emacs-lisp
+   (use-package gcmh
+   :straight t
+   :config
+   (gcmh-mode))
+   #+END_SRC
+* User Interface
+* General Functionality
+** General
+   Enable [[https://github.com/noctuid/general.el][general.el]] to make setting up keymaps more convenient later on.
+   #+BEGIN_QUOTE
+   General provides a more convenient method for binding keys in emacs (for both evil and non-evil users).
+   #+END_QUOTE
+   #+BEGIN_SRC emacs-lisp
+(use-package general
+    :straight t
+    :config
+    (general-evil-setup))
+   #+END_SRC
+** Evil
+   Configure [[https://github.com/emacs-evil/evil][evil-mode]] for VIM navigation and editing.
+   #+BEGIN_QUOTE
+   Evil is an extensible vi layer for Emacs. It emulates the main features of Vim, and provides facilities for writing custom extensions.
+   #+END_QUOTE
+   #+BEGIN_SRC emacs-lisp
+     (use-package evil
+       :straight t
+       :defer .1 ; Don't block first paint
+       :init
+       (setq evil-want-keybinding nil) ; For evil-collection
+       :config
+       (evil-mode))
+   #+END_SRC
+   Import [[https://github.com/emacs-evil/evil-collection][evil-collection]] for extra bindings.
+   #+BEGIN_QUOTE
+   This is a collection of Evil bindings for the parts of Emacs that Evil does not cover properly by default.
+   #+END_QUOTE
+   #+BEGIN_SRC emacs-lisp
+(use-package evil-collection
+  :straight t
+  :after evil
+  :init
+  (setq evil-collection-setup-minibuffer nil)
+  :config
+  (evil-collection-init))
+   #+END_SRC
+   Setup [[https://github.com/syl20bnr/evil-escape][evil-escape]] for consistent behavior when exiting buffers.
+   #+BEGIN_QUOTE
+   Customizable key sequence to escape from insert state and everything else in Emacs.
+   #+END_QUOTE
+   #+BEGIN_SRC emacs-lisp
+   (use-package evil-escape
+   :straight t
+   :init
+   (setq evil-escape-key-sequence "qq")
+   (setq evil-escape-delay 0.20) ; Increase delay to make it usable
+   :config
+   (evil-escape-mode))
+   #+END_SRC
+*** Extensions
+    Various other packages to extend Evil functionality.
+**** Navigation
+     An assortment of various navigation enhancements.
+***** Evil-Snipe
+      #+BEGIN_QUOTE
+      Provides 2-character motions for quickly (and more accurately) jumping around text.
+      #+END_QUOTE
+      #+BEGIN_SRC emacs-lisp
+(use-package evil-snipe
+  :straight t
+  :after evil
+  :config
+  (evil-snipe-mode)
+  :general
+  (general-def '(normal motion)
+      "s" 'evil-snipe-s
+      "S" 'evil-snipe-S)
+  (general-def 'operator
+      "z" 'evil-snipe-s
+      "Z" 'evil-snipe-S))
+      #+END_SRC
+**** Editing
+     Adding some functions for ease-of-editing.
+***** Evil-Surround
+      #+BEGIN_QUOTE
+      This package emulates surround.vim by Tim Pope. The functionality is wrapped into a minor mode.
+      #+END_QUOTE
+      #+BEGIN_SRC emacs-lisp
+  (use-package evil-surround
+    :straight t
+    :after evil
+    :config
+    (global-evil-surround-mode)
+    :general
+    ;; Workaround for mapping under non-prefix keys
+    (general-def 'normal
+	"y" (general-key-dispatch 'evil-yank
+		"s" 'evil-surround-region
+	  "y" 'evil-yank-line))
+    (general-def 'visual
+	"S"  'evil-surround-region)
+    (general-def 'operator
+	"s"  'evil-surround-edit))
+      #+END_SRC
+***** Evil-Commentary
+      #+BEGIN_QUOTE
+      Make it easy to comment out (lines of) code.
+      #+END_QUOTE
+      #+BEGIN_SRC emacs-lisp
+(use-package evil-commentary
+  :straight t
+  :after evil
+  :config
+  (evil-commentary-mode)
+  :general
+  (general-def 'motion
+      "gc" 'evil-commentary))
+      #+END_SRC
+***** Evil-Indent
+      #+BEGIN_QUOTE
+      Make it easy to comment out (lines of) code.
+      #+END_QUOTE
+      #+BEGIN_SRC emacs-lisp
+(use-package evil-indent-plus
+    :straight t
+    :after evil
+    :general
+    (general-def 'motion 
+	"ii" 'evil-indent-plus-i-indent
+	"iI" 'evil-indent-plus-i-indent-up
+	"iJ" 'evil-indent-plus-i-indent-up-down))
+      #+END_SRC
+***** Evil Exchange
+      #+BEGIN_QUOTE
+      #+END_QUOTE
+      #+BEGIN_SRC emacs-lisp
+      (use-package evil-exchange
+      :straight t
+      :after evil
+      :general
+      (general-def 'normal 
+          "c" (general-key-dispatch 'evil-change
+	      "x" 'evil-exchange
+	      "X" 'evil-exchange-cancel
+	      "c" 'evil-change-whole-line))
+      (general-def 'visual
+          "c" 'evil-change ; `evil-change` not bound in v-state but inherited so set again
+          "X" 'evil-exchange))
+      #+END_SRC
+**** Visual
+     Nice additions for visual feedback.
+***** Evil-Goggles
+      #+BEGIN_QUOTE
+      Evil-goggles displays a visual hint when editing with evil.
+      #+END_QUOTE
+      #+BEGIN_SRC emacs-lisp
+(use-package evil-goggles
+    :straight t
+    :after evil
+    :init
+    (setq evil-goggles-enable-commentary nil) ; Fix visual bug
+    (setq evil-goggles-duration 0.35) ;; Extend duration slightly
+    :config
+    (evil-goggles-mode))
+      #+END_SRC
+** Ivy + Counsel
+   #+BEGIN_QUOTE
+   Ivy is a generic completion mechanism for Emacs. Counsel uses Ivy to provide enhanced versions of common Emacs commands.
+   #+END_QUOTE
+   #+BEGIN_SRC emacs-lisp
+     (use-package ivy
+	 :straight t
+	 :defer .1 ; Don't block first paint
+	 :config
+	 (ivy-mode))
+    
+     (use-package counsel
+	 :straight t
+	 :after ivy)
+   #+END_SRC
+* Language Support
+* Miscellaneous
+* Keybinding
+** Which Key
+   In case I get forgetful :)
+   #+BEGIN_QUOTE
+Which-Key is a minor mode for Emacs that displays the key bindings following your currently entered incomplete command in a popup. 
+   #+END_QUOTE
+   #+BEGIN_SRC emacs-lisp
+   (use-package which-key
+   :straight t
+   :config
+   (which-key-mode))
+   #+END_SRC
+** Leader
+   Define a custom leader key for use by functions.
+   #+BEGIN_SRC emacs-lisp
+     ;; Bindings for inside and outside normal mode
+     (defconst leader-key ",")
+     (defconst non-normal-leader-key "C-,")
+
+     (general-def '(normal insert visual) 'override
+	 :prefix leader-key
+	 :non-normal-prefix non-normal-leader-key
+	 :prefix-map 'leader-map
+
+	 "f" #'counsel-find-file
+
+	 "h" '(:ignore t :which-key "help") 
+	 "hf" #'counsel-describe-function
+	 "hv" #'counsel-describe-variable
+
+	 "b" '(:ignore t :which-key "buffer") 
+	 "bb" #'counsel-switch-buffer)
+   #+END_SRC
+** Hercules
+#+BEGIN_SRC emacs-lisp
+(use-package hercules
+:straight t
+:config
+(hercules-def
+    :keymap 'leader-map
+    :transient t))
+#+END_SRC
+* Custom
